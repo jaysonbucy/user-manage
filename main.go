@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -44,7 +45,30 @@ func GetUserEndpoint(response http.ResponseWriter, request *http.Request) {
 	}
 	json.NewEncoder(response).Encode(user)
 }
-func GetUsersEndpoint(response http.ResponseWriter, request *http.Request)
+func GetUsersEndpoint(response http.ResponseWriter, request *http.Request) {
+	response.Header().Set("content-type", "application/json")
+	var users []User
+	collection := client.Database("milhub-user").Collection("user")
+	ctx, _ := context.WithTimeout(context.Background(), 30*time.Second)
+	cursor, err := collection.Find(ctx, bson.D{})
+	if err != nil {
+		response.WriteHeader(http.StatusInternalServerError)
+		response.Write([]byte(`{"message": "` + err.Error() + `" }`))
+		return
+	}
+	defer cursor.Close(ctx)
+	for cursor.Next(ctx) {
+		var user User
+		cursor.Decode(&user)
+		users = append(users, user)
+	}
+	if err := cursor.Err(); err != nil {
+		response.WriteHeader(http.StatusInternalServerError)
+		response.Write([]byte(`{"message": "` + err.Error() + `" }`))
+		return
+	}
+	json.NewEncoder(response).Encode(users)
+}
 
 func main() {
 	fmt.Println("Starting application...")
