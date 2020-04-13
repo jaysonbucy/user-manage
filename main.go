@@ -18,8 +18,8 @@ var client *mongo.Client
 
 type User struct {
 	ID        primitive.ObjectID `json:"_id,omitempty" bson:"_id,omitempty"`
-	dod_id    string             `json:"dod_id,omitempty" bson:"dod_id,omitempty"`
-	user_name string             `json:"user_name,omitempty" bson:"user_name,omitempty"`
+	Dod_id    string             `json:"dod_id,omitempty" bson:"dod_id,omitempty"`
+	User_name string             `json:"user_name,omitempty" bson:"user_name,omitempty"`
 }
 
 func CreateUserEndpoint(response http.ResponseWriter, request *http.Request) {
